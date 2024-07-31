@@ -95,4 +95,9 @@ trait SortsQuery
             throw InvalidSortQuery::sortsNotAllowed($unknownSorts, $allowedSortNames);
         }
     }
+
+    public function getAllowedSorts(): ?Collection
+    {
+        return $this->allowedSorts;
+    }
 }

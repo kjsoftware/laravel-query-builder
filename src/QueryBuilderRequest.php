@@ -5,6 +5,7 @@ namespace Spatie\QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Spatie\QueryBuilder\Mappings\Column;
 
 class QueryBuilderRequest extends Request
 {
@@ -65,32 +66,13 @@ class QueryBuilderRequest extends Request
 
         $fieldsPerTable = collect(is_string($fieldsData) ? explode(static::getFieldsArrayValueDelimiter(), $fieldsData) : $fieldsData);
 
-        if ($fieldsPerTable->isEmpty()) {
+        $data = $this->getRequestData($fieldsParameterName);
+
+        if (! $data) {
             return collect();
         }
 
-        $fields = [];
-
-        $fieldsPerTable->each(function ($tableFields, $model) use (&$fields) {
-            if (is_numeric($model)) {
-                // If the field is in dot notation, we'll grab the table without the field.
-                // If the field isn't in dot notation we want the base table. We'll use `_` and replace it later.
-                $model = Str::contains($tableFields, '.') ? Str::beforeLast($tableFields, '.') : '_';
-            }
-
-            if (! isset($fields[$model])) {
-                $fields[$model] = [];
-            }
-
-            // If the field is in dot notation, we'll grab the field without the tables:
-            $tableFields = array_map(function (string $field) {
-                return Str::afterLast($field, '.');
-            }, explode(static::getFieldsArrayValueDelimiter(), $tableFields));
-
-            $fields[$model] = array_merge($fields[$model], $tableFields);
-        });
-
-        return collect($fields);
+        return collect(explode(static::getFieldsArrayValueDelimiter(), $data))->mapInto(Column::class);
     }
 
     public function sorts(): Collection
