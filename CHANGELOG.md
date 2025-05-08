@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-query-builder` will be documented in this file
 
+## v6.3.2 - 2025-05-08
+
+**Full Changelog**: https://github.com/kjsoftware/laravel-query-builder/commits/v6.3.2
+
 ## 6.3.2 - 2025-04-16
 
 ### What's Changed
