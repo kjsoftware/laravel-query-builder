@@ -108,7 +108,7 @@ trait AddsFieldsToQuery
 
         if (config('query-builder.convert_field_names_to_snake_case', false)) {
             $fields = $fields->mapWithKeys(fn ($fields, $table) => [
-                $table => collect($fields)->map(fn ($field) => Str::snake($field))
+                $table => collect($fields)->map(fn ($field) => Str::snake($field)),
             ]);
         }
 
@@ -117,18 +117,19 @@ trait AddsFieldsToQuery
         foreach ($possibleRelatedNames as $tableName) {
             if ($fields->has($tableName)) {
                 $matchedFields = $fields->get($tableName);
+
                 break;
             }
         }
 
-        if (!$matchedFields) {
+        if (! $matchedFields) {
             return [];
         }
 
         $matchedFields = $matchedFields->toArray();
 
         // Validate against allowed fields as in original implementation
-        if (!$this->allowedFields instanceof Collection) {
+        if (! $this->allowedFields instanceof Collection) {
             throw new UnknownIncludedFieldsQuery($matchedFields);
         }
 
