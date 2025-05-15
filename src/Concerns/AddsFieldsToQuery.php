@@ -40,13 +40,21 @@ trait AddsFieldsToQuery
     {
         $modelTableName = $this->getModel()->getTable();
 
+        if (config('query-builder.convert_relation_table_name_strategy', false) === 'camelCase') {
+            $modelTableName = Str::camel($modelTableName);
+        }
+
+        if (config('query-builder.convert_relation_table_name_strategy', false) === 'snake_case') {
+            $modelTableName = Str::snake($modelTableName);
+        }
+
         $requestFields = $this->request->fields()->map(function ($field) {
             return $field->name;
         });
 
         $modelFields = $this->allowedFields->mapWithKeys(function (AllowedField $field) {
             return [
-                $field->getName() => $field->getInternalNames()->toArray(),
+                $field->getName() => $field->getInternalNames(config('query-builder.convert_field_names_to_snake_case', false))->toArray(),
             ];
         });
 
@@ -73,26 +81,64 @@ trait AddsFieldsToQuery
         $this->select($prependedFields);
     }
 
-    public function getRequestedFieldsForRelatedTable(string $relation): array
+    public function getRequestedFieldsForRelatedTable(string $relation, ?string $tableName = null): array
     {
-        $tableOrRelation = config('query-builder.convert_relation_names_to_snake_case_plural', true)
+        // Build list of possible table names to check
+        $possibleRelatedNames = [];
+
+        // Original table name conversion logic
+        $possibleRelatedNames[] = config('query-builder.convert_relation_names_to_snake_case_plural', true)
             ? Str::plural(Str::snake($relation))
             : $relation;
 
-        $fields = $this->request->fields()
-            ->mapWithKeys(fn ($fields, $table) => [$table => $fields])
-            ->get($tableOrRelation);
+        // New strategy-based conversions
+        $strategy = config('query-builder.convert_relation_table_name_strategy', false);
+        if ($tableName) {
+            if ($strategy === 'snake_case') {
+                $possibleRelatedNames[] = Str::snake($tableName);
+            } elseif ($strategy === 'camelCase') {
+                $possibleRelatedNames[] = Str::camel($tableName);
+            } elseif ($strategy === 'none') {
+                $possibleRelatedNames[] = $tableName;
+            }
+        }
 
-        if (! $fields) {
+        // Get fields with potential snake_case conversion
+        $fields = $this->request->fields();
+
+        if (config('query-builder.convert_field_names_to_snake_case', false)) {
+            $fields = $fields->mapWithKeys(fn ($fields, $table) => [
+                $table => collect($fields)->map(fn ($field) => Str::snake($field)),
+            ]);
+        }
+
+        // Find fields for any of the possible table names
+        $matchedFields = null;
+        foreach ($possibleRelatedNames as $tableName) {
+            if ($fields->has($tableName)) {
+                $matchedFields = $fields->get($tableName);
+
+                break;
+            }
+        }
+
+        if (! $matchedFields) {
             return [];
         }
 
+        $matchedFields = $matchedFields->toArray();
+
+        // Validate against allowed fields as in original implementation
         if (! $this->allowedFields instanceof Collection) {
-            // We have requested fields but no allowed fields (yet?)
-            throw new UnknownIncludedFieldsQuery($fields);
+            throw new UnknownIncludedFieldsQuery($matchedFields);
         }
 
-        return $fields;
+        // Prepend table name if provided (from new implementation)
+        if ($tableName !== null) {
+            $matchedFields = $this->prependFieldsWithTableName($matchedFields, $tableName);
+        }
+
+        return $matchedFields;
     }
 
     protected function ensureAllFieldsExist(): void
