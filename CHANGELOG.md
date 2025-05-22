@@ -2,6 +2,44 @@
 
 All notable changes to `laravel-query-builder` will be documented in this file
 
+## v3.0.0 - 2025-05-22
+
+### Nieuwe functies
+
+- Ondersteuning toegevoegd voor operator-gebaseerde filtering (zoals *groter dan*, *kleiner dan*, *niet gelijk*) en dynamische operatoren in filters.
+- Mogelijkheid toegevoegd om te filteren op `BelongsTo`-relaties, inclusief geneste relaties.
+- Nieuwe configuratie-opties voor het converteren van relatie- en veldnamen naar `snake_case` of `camelCase` in query parameters.
+- Verbeterde compatibiliteit met Laravel 12.x en bijbehorende dependencies.
+- `QueryBuilder` ondersteunt nu generics voor betere type-inferentie.
+
+### Bugfixes
+
+- Correcte veldselectie bij many-to-many-relaties.
+- Verbeterde verwerking van escape-tekens bij gebruik van PostgreSQL.
+- Diverse kleine correcties in veldselectie en filtering.
+
+### Documentatie
+
+- Uitgebreide toelichting op de nieuwe filtermogelijkheden en configuratie-opties.
+- Introductie visueel verbeterd met een logo.
+- Alle links en voorbeelden geüpdatet naar versie 6.
+
+### Tests
+
+- Uitgebreide testcases toegevoegd voor de nieuwe filter- en veldselectiefunctionaliteit, inclusief edge cases en geneste relaties.
+
+### Chores
+
+- Dependency-updates en aanpassingen aan CI-workflows doorgevoerd.
+- Cache- en configuratiebestanden opgeschoond.
+
+### What's Changed
+
+* V2 by @thuijbers in https://github.com/kjsoftware/laravel-query-builder/pull/7
+* Issue/rdt 440 by @ruuddeenen in https://github.com/kjsoftware/laravel-query-builder/pull/9
+
+**Full Changelog**: https://github.com/kjsoftware/laravel-query-builder/compare/v2.0.0...v3.0.0
+
 ## v6.3.2 - 2025-05-08
 
 **Full Changelog**: https://github.com/kjsoftware/laravel-query-builder/commits/v6.3.2
