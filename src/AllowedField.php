@@ -3,6 +3,7 @@
 namespace Spatie\QueryBuilder;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class AllowedField
 {
@@ -36,8 +37,12 @@ class AllowedField
         return $this->name;
     }
 
-    public function getInternalNames(): Collection
+    public function getInternalNames(bool $snakeCase = false): Collection
     {
+        if ($snakeCase) {
+            return $this->internalNames->map(fn ($name) => Str::snake($name));
+        }
+
         return $this->internalNames;
     }
 }
